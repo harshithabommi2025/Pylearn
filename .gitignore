@@ -1,0 +1,8 @@
+venv/
+venv/
+data/
+.streamlit/groq_key
+.env
+__pycache__/
+*.pyc
+.DS_Store

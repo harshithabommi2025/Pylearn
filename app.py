@@ -1369,7 +1369,17 @@ for k, v in [
 ]:
     if k not in st.session_state:
         st.session_state[k] = v
-
+        
+       # Load the Groq key: Streamlit Secrets (live site) or .streamlit/groq_key (your Mac)
+if not st.session_state.get("groq_api_key"):
+    try:
+        st.session_state["groq_api_key"] = str(st.secrets["GROQ_API_KEY"]).strip()
+    except Exception:
+        try:
+            _raw = (Path(__file__).parent / ".streamlit" / "groq_key").read_text()
+            st.session_state["groq_api_key"] = _raw.split("=", 1)[-1].strip().strip('"').strip("'")
+        except Exception:
+            pass
 # ─────────────────────────────────────────────────────────────────────────────
 #  SIDEBAR
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1715,17 +1725,19 @@ elif st.session_state.page == "lesson":
             st.markdown(feedback)
 
             # ── Did you understand? ──────────────────────────────────────────
-            st.markdown("---")
-            st.markdown("**How did this go for you?**")
-            c1, c2 = st.columns(2)
-            with c1:
-                if st.button("✅ I understood this!", use_container_width=True):
-                    mark_module(st.session_state.username, mod["id"], True)
-                    st.rerun()
-            with c2:
-                if st.button("🔁 I need more practice", use_container_width=True):
-                    mark_module(st.session_state.username, mod["id"], False)
-                    st.rerun()
+        st.markdown("---")
+        st.markdown("**How did this go for you?**")
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("✅ I understood this!", use_container_width=True,
+                         key=f"understood_{mod['id']}"):
+                mark_module(st.session_state.username, mod["id"], True)
+                st.rerun()
+        with c2:
+            if st.button("🔁 I need more practice", use_container_width=True,
+                         key=f"practice_{mod['id']}"):
+                mark_module(st.session_state.username, mod["id"], False)
+                st.rerun()
 
         if completed:
             rec   = progress[mod["id"]]
